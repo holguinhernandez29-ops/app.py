@@ -2,43 +2,46 @@ import streamlit as st
 import google.generativeai as genai
 import streamlit.components.v1 as components
 
-# --- CONFIGURACIÓN ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Songwriter AI Pro", layout="centered")
 
-# AdSense (Tu código está activo aquí)
+# --- ADSENSE ---
 adsense_code = """
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8332181120172714"
      crossorigin="anonymous"></script>
 """
 components.html(adsense_code, height=0)
 
-# CONEXIÓN SEGURA
+# --- CONEXIÓN ESTABLE ---
+# Buscamos la llave en los Secrets de Streamlit
 if "GOOGLE_API_KEY" in st.secrets:
-    try:
-        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-        # USAMOS EL NOMBRE ESTABLE (Sin "models/" y sin "beta")
-        model = genai.GenerativeModel('gemini-1.5-flash')
-    except Exception as e:
-        st.error("Error de configuración.")
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
 else:
-    st.error("Configura la llave en Secrets.")
+    st.error("⚠️ Configura la llave en los Secrets de Streamlit.")
 
 st.title("🎼 Songwriter AI Pro")
 
 genero = st.text_input("Género Musical", value="Cumbia")
-tema = st.text_area("Historia/Detalles", placeholder="Historia de amor entre Alberto y Marissa...")
+tema = st.text_area("Historia/Detalles", placeholder="Escribe aquí la historia...")
 
 if st.button("Componer ✨", use_container_width=True):
     if tema:
         with st.spinner("🚀 Escribiendo..."):
             try:
-                # La llamada ahora es limpia y directa
+                # LA SOLUCIÓN AL 404: Usar el nombre exacto sin prefijos raros
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # Forzamos que use la versión estable de la API
                 response = model.generate_content(f"Escribe una canción de {genero} sobre: {tema}")
+                
                 st.markdown("---")
+                st.markdown("### 📝 Letra Generada:")
                 st.write(response.text)
                 st.balloons()
             except Exception as e:
-                st.error(f"Hubo un detalle: {e}")
+                # Si falla, este error nos dirá exactamente qué falta
+                st.error(f"Detalle técnico: {e}")
     else:
-        st.warning("Escribe de qué trata la canción.")
+        st.warning("Escribe algo para empezar.")
          
