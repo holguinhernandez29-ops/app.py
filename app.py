@@ -1,59 +1,55 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración de la página
-st.set_page_config(page_title="IA Musical Pro", layout="centered", page_icon="🎼")
+# Configuración
+st.set_page_config(page_title="Compositor Pro IA", layout="centered", page_icon="🎼")
 
 # --- CONEXIÓN SEGURA ---
 try:
-    # Busca la llave en los Secrets de Streamlit
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
 except:
-    st.error("Error: Configura la llave en los Secrets de Streamlit con el nombre GOOGLE_API_KEY")
+    st.error("Error: Configura 'GOOGLE_API_KEY' en los Secrets de Streamlit.")
 
 # --- PUBLICIDAD ---
 def mostrar_anuncio(posicion):
-    st.markdown(f"""
-    <div style="text-align:center; margin: 15px 0; padding: 10px; background: #f0f2f6; border-radius: 10px; border: 1px dashed #ccc;">
-        <p style="color: #666; font-size: 10px; margin: 0;">PUBLICIDAD - {posicion}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"""<div style="text-align:center; margin: 10px 0; padding: 10px; background: #f0f2f6; border-radius: 8px; border: 1px dashed #ccc;"><p style="color: #666; font-size: 10px; margin: 0;">PUBLICIDAD - {posicion}</p></div>""", unsafe_allow_html=True)
 
 # --- DISEÑO ---
-st.title("🎼 Generador de Letras IA")
+st.title("🎼 Generador de Letras y Prompts")
 mostrar_anuncio("BANNER SUPERIOR")
 
-# Entrada de Género Libre
-genero = st.text_input("Género de la canción:", placeholder="Ej: Corrido, Rap, Bachata, Reggaeton...")
+genero = st.text_input("Género Musical:", placeholder="Ej: Corrido Tumbado, Bachata Romántica...")
+tema = st.text_area("¿De qué trata la historia?", placeholder="Escribe los detalles aquí...")
 
-# Historia/Tema
-tema = st.text_area("¿De qué trata la letra?", placeholder="Ej: Una historia de amor de Alberto y Marissa que superó la distancia...")
+# NUEVA OPCIÓN: Generar también el prompt para música
+generar_prompt_ia = st.checkbox("Generar Prompt para IA Musical (Suno/Udio)", value=True)
 
-if st.button("Generar Letra ✨", use_container_width=True):
+if st.button("Componer ✨", use_container_width=True):
     if tema and genero:
-        with st.spinner("Escribiendo rimas..."):
+        with st.spinner("Escribiendo rimas y estilo..."):
             try:
-                # Usamos el modelo más estable para texto
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-1.5-flash-latest')
                 
-                prompt = f"""
-                Eres un compositor experto. Escribe la letra de una canción de {genero}.
-                Tema: {tema}.
-                Estructura: Intro, Versos, Coro pegajoso y Final.
-                Asegúrate de que las rimas sean buenas y tengan sentimiento.
+                # Instrucción para que haga ambas cosas
+                prompt_input = f"""
+                1. Escribe la letra de una canción de {genero} sobre: {tema}. Estructura: Intro, Versos, Coro, Final.
                 """
-                
-                response = model.generate_content(prompt)
+                if generar_prompt_ia:
+                    prompt_input += f"\n2. Al final, crea un 'Prompt Musical' corto y técnico en inglés y español para generar esta canción en una IA de música, detallando el estilo, tempo y vibra."
+
+                response = model.generate_content(prompt_input)
                 
                 if response.text:
-                    st.success("¡Letra generada!")
+                    st.success("¡Composición lista!")
                     st.markdown("---")
                     st.write(response.text)
                     st.markdown("---")
+                else:
+                    st.error("No se pudo generar, intenta de nuevo.")
             except Exception as e:
-                st.error(f"Hubo un detalle: {str(e)}")
+                st.error(f"Error: {str(e)}")
     else:
-        st.warning("Escribe el género y la historia para poder componer.")
+        st.warning("Falta el género o la historia.")
 
 mostrar_anuncio("BANNER INFERIOR")
