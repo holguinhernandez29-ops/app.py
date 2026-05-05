@@ -1,12 +1,21 @@
 import streamlit as st
 import google.generativeai as genai
 
-# PEGA TU LLAVE AQUÍ DIRECTAMENTE PARA PROBAR
-genai.configure(api_key="AIzaSyDSfUxU8Bn64hYhdhDYnqO_NnF9W9-8O3o")
+st.title("Conexión Directa")
 
-st.title("Prueba de Conexión")
+# Prueba con tu llave nueva
+llave = "AIzaSyDSfUxU8Bn64hYhdhDYnqO_NnF9W9-8O3o" 
+
 if st.button("Probar"):
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    res = model.generate_content("Hola")
-    st.write(res.text)
-    
+    try:
+        genai.configure(api_key=llave)
+        # Usamos 'gemini-pro' que es el nombre más estable
+        model = genai.GenerativeModel('gemini-pro')
+        
+        response = model.generate_content("Hola, dime una frase corta de éxito")
+        
+        st.success("¡CONECTADO!")
+        st.write(response.text)
+    except Exception as e:
+        st.error(f"Error: {e}")
+        
