@@ -1,7 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración
+# Configuración de la página
 st.set_page_config(page_title="Compositor Pro IA", layout="centered", page_icon="🎼")
 
 # --- CONEXIÓN SEGURA ---
@@ -15,41 +15,36 @@ except:
 def mostrar_anuncio(posicion):
     st.markdown(f"""<div style="text-align:center; margin: 10px 0; padding: 10px; background: #f0f2f6; border-radius: 8px; border: 1px dashed #ccc;"><p style="color: #666; font-size: 10px; margin: 0;">PUBLICIDAD - {posicion}</p></div>""", unsafe_allow_html=True)
 
-# --- DISEÑO ---
+# --- INTERFAZ ---
 st.title("🎼 Generador de Letras y Prompts")
 mostrar_anuncio("BANNER SUPERIOR")
 
-genero = st.text_input("Género Musical:", placeholder="Ej: Corrido Tumbado, Bachata Romántica...")
+genero = st.text_input("Género Musical:", placeholder="Ej: Corrido Tumbado, Bachata, Rap...")
 tema = st.text_area("¿De qué trata la historia?", placeholder="Escribe los detalles aquí...")
 
-# NUEVA OPCIÓN: Generar también el prompt para música
 generar_prompt_ia = st.checkbox("Generar Prompt para IA Musical (Suno/Udio)", value=True)
 
 if st.button("Componer ✨", use_container_width=True):
     if tema and genero:
-        with st.spinner("Escribiendo rimas y estilo..."):
+        with st.spinner("Componiendo..."):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                # CAMBIO CLAVE: Usamos 'gemini-pro' que es el más compatible
+                model = genai.GenerativeModel('gemini-pro')
                 
-                # Instrucción para que haga ambas cosas
-                prompt_input = f"""
-                1. Escribe la letra de una canción de {genero} sobre: {tema}. Estructura: Intro, Versos, Coro, Final.
-                """
+                instruccion = f"Escribe la letra de una canción de {genero} sobre: {tema}. Incluye Intro, Versos, Coro y Final."
                 if generar_prompt_ia:
-                    prompt_input += f"\n2. Al final, crea un 'Prompt Musical' corto y técnico en inglés y español para generar esta canción en una IA de música, detallando el estilo, tempo y vibra."
+                    instruccion += "\nAl final añade un 'Prompt Musical' técnico en inglés para generar la música en una IA como Suno."
 
-                response = model.generate_content(prompt_input)
+                response = model.generate_content(instruccion)
                 
                 if response.text:
-                    st.success("¡Composición lista!")
+                    st.success("¡Listo!")
                     st.markdown("---")
                     st.write(response.text)
                     st.markdown("---")
-                else:
-                    st.error("No se pudo generar, intenta de nuevo.")
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error("Error de conexión. Revisa que tu llave API sea válida.")
     else:
-        st.warning("Falta el género o la historia.")
+        st.warning("Completa los campos de género e historia.")
 
 mostrar_anuncio("BANNER INFERIOR")
