@@ -1,47 +1,57 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="Compositor AI", layout="centered", page_icon="🎼")
+# Configuración Pro
+st.set_page_config(page_title="Compositor AI Pro", layout="centered", page_icon="🎼")
 
-# Conexión Segura
+# --- CONEXIÓN SEGURA ---
 try:
-    # Intentamos obtener la llave de los Secrets
     if "GOOGLE_API_KEY" in st.secrets:
-        key = st.secrets["GOOGLE_API_KEY"]
-        genai.configure(api_key=key)
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     else:
-        st.error("⚠️ Falta la llave GOOGLE_API_KEY en los Secrets de Streamlit.")
-except Exception as e:
-    st.error(f"❌ Error de configuración: {e}")
+        st.error("⚠️ Falta la llave en Secrets.")
+except:
+    st.error("❌ Error de conexión.")
 
-st.title("🎼 Generador de Canciones")
+# --- PUBLICIDAD ---
+def mostrar_anuncio(posicion):
+    st.markdown(f"""<div style="text-align:center; margin: 10px 0; padding: 10px; background: #f0f2f6; border-radius: 8px; border: 1px dashed #ccc;"><p style="color: #666; font-size: 10px; margin: 0;">PUBLICIDAD - {posicion}</p></div>""", unsafe_allow_html=True)
 
-genero = st.text_input("Género Musical:", placeholder="Ej: Corrido, Bachata, Rap...")
+# --- DISEÑO ---
+st.title("🎼 Generador de Canciones Pro")
+mostrar_anuncio("BANNER SUPERIOR")
+
+# Entradas
+genero = st.text_input("Género Musical:", placeholder="Ej: Corrido Tumbado, Bachata, Rap...")
 tema = st.text_area("Historia de la canción:", placeholder="Ej: Alberto y Marissa...")
 
-if st.button("Componer ✨", use_container_width=True):
+# Opciones adicionales
+col_op1, col_op2 = st.columns(2)
+with col_op1:
+    generar_prompt = st.checkbox("Generar Prompt para Suno/Udio", value=True)
+with col_op2:
+    vibe = st.selectbox("Estilo:", ["Romántico", "Bélico", "Triste", "Fiesta"])
+
+if st.button("Componer Obra Maestra ✨", use_container_width=True):
     if genero and tema:
-        with st.spinner("Escribiendo..."):
+        with st.spinner("🚀 Escribiendo rimas..."):
             try:
-                # Intentamos con el modelo Pro (más inteligente)
-                model = genai.GenerativeModel('gemini-1.5-pro')
-                prompt = f"Escribe la letra de una canción de {genero} sobre: {tema}. Incluye intro, versos y coro."
+                # Usamos el modelo más rápido y disponible para evitar que se quede cargando
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 
-                response = model.generate_content(prompt)
+                instruccion = f"Escribe la letra de una canción de {genero} estilo {vibe} sobre: {tema}. Estructura: Intro, Versos, Coro, Final."
+                if generar_prompt:
+                    instruccion += "\nAl final añade un 'Prompt Musical' técnico en inglés para Suno/Udio."
+
+                response = model.generate_content(instruccion)
                 
                 if response.text:
-                    st.subheader("Tu Letra:")
+                    st.markdown("### 🎼 Letra Generada:")
                     st.write(response.text)
                     st.balloons()
-            except:
-                try:
-                    # Si el Pro falla, intentamos con el Flash (más rápido)
-                    model_flash = genai.GenerativeModel('gemini-1.5-flash')
-                    response_flash = model_flash.generate_content(prompt)
-                    st.subheader("Tu Letra:")
-                    st.write(response_flash.text)
-                except Exception as e:
-                    st.error("No se pudo conectar con la IA. Revisa que tu llave API sea correcta y no tenga restricciones.")
+            except Exception as e:
+                st.error("La IA está tardando en responder. Refresca la página e intenta con un tema más corto.")
     else:
-        st.warning("Por favor rellena los campos.")
-        
+        st.warning("Completa el género y la historia.")
+
+mostrar_anuncio("BANNER INFERIOR")
