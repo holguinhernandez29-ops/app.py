@@ -1,38 +1,35 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="Songwriter AI Pro", layout="centered")
+st.set_page_config(page_title="Compositor Final")
 
-# --- CONEXIÓN DIRECTA ---
+# CONEXIÓN ULTRA-SIMPLE
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    st.error("Configura la llave en Secrets.")
+    st.error("Revisa los Secrets en Streamlit.")
 
 st.title("🎼 Songwriter AI Pro")
 
-genero = st.text_input("Género Musical")
-tema = st.text_area("Historia/Detalles")
+genero = st.text_input("Género")
+tema = st.text_area("Historia")
 
-if st.button("Componer ✨", use_container_width=True):
+if st.button("Componer ✨"):
     if genero and tema:
-        with st.spinner("🚀 Escribiendo..."):
-            # INTENTO 1: Modelo Flash Estable
+        with st.spinner("Conectando..."):
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(f"Escribe una canción de {genero} sobre: {tema}")
-                st.markdown("---")
-                st.write(response.text)
+                # Forzamos el modelo más estable que existe
+                model = genai.GenerativeModel('gemini-pro')
+                res = model.generate_content(f"Escribe un {genero} sobre {tema}")
+                st.write(res.text)
                 st.balloons()
-            except:
-                # INTENTO 2: Modelo Pro (Respaldo)
+            except Exception as e:
+                # Si falla el pro, intentamos el flash a la fuerza
                 try:
-                    model_alt = genai.GenerativeModel('gemini-1.5-pro')
-                    response = model_alt.generate_content(f"Escribe una canción de {genero} sobre: {tema}")
-                    st.write(response.text)
+                    model2 = genai.GenerativeModel('gemini-1.5-flash')
+                    res2 = model2.generate_content(f"Escribe un {genero} sobre {tema}")
+                    st.write(res2.text)
                     st.balloons()
-                except Exception as e:
-                    st.error("Servidor saturado. Intenta de nuevo en 10 segundos.")
-    else:
-        st.warning("Completa los campos.")
-    
+                except:
+                    st.error(f"Error final: {e}. Verifica tu llave en Google AI Studio.")
+                    
