@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración básica
 st.set_page_config(page_title="Songwriter Pro")
 
 # Conexión directa
@@ -20,11 +19,9 @@ if st.button("Componer ✨"):
     if tema:
         with st.spinner("Escribiendo..."):
             try:
-                # Esta es la llamada que ya sabemos que funciona
-                response = model.generate_content(f"Escribe un {genero} sobre {tema}")
+                response = model.generate_content(f"Escribe una canción de {genero} sobre {tema}")
                 st.markdown("---")
                 st.write(response.text)
                 st.balloons()
             except Exception as e:
                 st.error(f"Error: {e}")
-                 
