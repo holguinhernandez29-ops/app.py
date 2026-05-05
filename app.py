@@ -1,57 +1,59 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="Canciones Pro AI", layout="centered", page_icon="🎼")
+# Configuración estética
+st.set_page_config(page_title="Songwriter AI Pro", layout="centered", page_icon="🎼")
 
-# --- CONEXIÓN SEGURA ---
-if "GOOGLE_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-else:
-    st.error("⚠️ Configura la llave en los Secrets de Streamlit.")
+# --- CONEXIÓN INVISIBLE ---
+def inicializar_servicio():
+    try:
+        # Intenta conectar usando la llave guardada en los secretos
+        if "GOOGLE_API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+            return True
+        return False
+    except:
+        return False
 
-# --- PUBLICIDAD ---
-def mostrar_anuncio(posicion):
-    st.markdown(f"""<div style="text-align:center; margin: 10px 0; padding: 10px; background: #f0f2f6; border-radius: 8px; border: 1px dashed #ccc;"><p style="color: #666; font-size: 10px; margin: 0;">PUBLICIDAD - {posicion}</p></div>""", unsafe_allow_html=True)
+# --- DISEÑO DE LA APP ---
+st.title("🎼 Songwriter AI Pro")
 
-st.title("🎼 Canciones Pro AI")
-mostrar_anuncio("BANNER SUPERIOR")
+# Espacio publicitario superior
+st.markdown("""<div style="text-align:center; padding:10px; background:#f0f2f6; border-radius:8px; border:1px solid #ddd; margin-bottom:20px;"><p style="color:#888; font-size:12px; margin:0;">ESPACIO PUBLICITARIO</p></div>""", unsafe_allow_html=True)
 
+# Entradas del usuario
 col1, col2 = st.columns(2)
 with col1:
-    genero = st.text_input("Género Musical:", placeholder="Ej: Corrido, Rap...")
+    genero = st.text_input("Género Musical", placeholder="Ej: Corrido, Pop, Rap...")
 with col2:
-    estilo = st.selectbox("Estilo:", ["Romántico", "Bélico", "Triste", "Fiesta"])
+    estilo = st.selectbox("Estilo", ["Romántico", "Alegre", "Triste", "Bélico"])
 
-tema = st.text_area("Historia de la canción:", placeholder="Ej: Alberto y Marissa...")
-generar_suno = st.checkbox("Generar Prompt para Suno/Udio", value=True)
+tema = st.text_area("¿De qué quieres que hable la canción?", placeholder="Escribe los detalles o la historia aquí...", height=100)
 
-if st.button("Componer Obra Maestra ✨", use_container_width=True):
+if st.button("Componer Canción ✨", use_container_width=True):
     if genero and tema:
-        with st.spinner("🚀 Componiendo..."):
-            try:
-                # NOMBRE CORREGIDO PARA EVITAR EL ERROR 404
-                model = genai.GenerativeModel('gemini-1.5-flash-001')
-                
-                prompt = f"Escribe la letra de una canción de {genero} {estilo} sobre: {tema}. Incluye Intro, Versos, Coro y Final."
-                if generar_suno:
-                    prompt += "\nAl final añade un 'Prompt Musical' técnico en inglés para Suno/Udio."
-                
-                response = model.generate_content(prompt)
-                
-                if response.text:
-                    st.markdown("### 🎼 Letra Generada:")
-                    st.write(response.text)
-                    st.balloons()
-            except Exception as e:
-                # Si el anterior falla, intenta con la versión estable
+        with st.spinner("Escribiendo tu próxima obra maestra..."):
+            if inicializar_servicio():
                 try:
-                    model_alt = genai.GenerativeModel('gemini-1.5-pro-001')
-                    response = model_alt.generate_content(prompt)
-                    st.write(response.text)
-                    st.balloons()
+                    # Modelo estándar para máxima compatibilidad
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    
+                    prompt = f"Escribe la letra de una canción de {genero} estilo {estilo} sobre: {tema}. Incluye Intro, Versos, Coro y Final. También incluye al final un prompt técnico en inglés para generar la música en IA."
+                    
+                    response = model.generate_content(prompt)
+                    
+                    if response.text:
+                        st.markdown("---")
+                        st.markdown("### 🎼 Letra Generada")
+                        st.write(response.text)
+                        st.balloons()
                 except:
-                    st.error("Hubo un detalle con la conexión de Google. Revisa que tu llave en Secrets no tenga espacios.")
+                    st.error("Lo sentimos, el servicio está experimentando alta demanda. Por favor, intenta de nuevo en unos momentos.")
+            else:
+                # Mensaje genérico por si la llave falla, para que el usuario no sepa qué es
+                st.error("Servicio temporalmente no disponible. Inténtelo más tarde.")
     else:
-        st.warning("Por favor, llena los campos.")
+        st.warning("Por favor, completa los campos de género e historia.")
 
-mostrar_anuncio("BANNER INFERIOR")
+# Espacio publicitario inferior
+st.markdown("""<div style="text-align:center; padding:10px; background:#f0f2f6; border-radius:8px; border:1px solid #ddd; margin-top:30px;"><p style="color:#888; font-size:12px; margin:0;">ESPACIO PUBLICITARIO</p></div>""", unsafe_allow_html=True)
