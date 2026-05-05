@@ -1,40 +1,49 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración de la página
-st.set_page_config(page_title="IA Musical Inteligente", layout="centered")
+# Configuración de página
+st.set_page_config(page_title="IA Musical Pro", layout="centered")
 
-# --- AQUÍ ES DONDE PUSE TU LLAVE ---
+# --- CONEXIÓN DIRECTA ---
+# Asegúrate de que no haya espacios antes o después de la clave
 API_KEY = "AIzaSyAQd7vtgDHInLCj2lkoOVSVtjQEfiOxa-k"
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-pro')
 
-# --- DISEÑO DE LA APP ---
+try:
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
+except Exception as e:
+    st.error("Error de configuración inicial.")
+
 st.title("🎼 Generador de Canciones Originales")
-st.write("Escribe el género y la historia para crear una letra única.")
 
-# Espacio publicitario
-st.markdown('<div style="text-align:center; background-color:#f0f0f0; padding:10px; border-radius:5px; border:1px solid #ddd;">ANUNCIO PUBLICITARIO</div>', unsafe_allow_html=True)
+# Publicidad
+st.info("Espacio para Publicidad de Google AdSense")
 
-genero = st.text_input("¿Qué género musical quieres?", placeholder="Ej: Corrido, Rap, Trap...")
-tema = st.text_area("¿De qué trata la canción?", placeholder="Cuéntame la historia...")
+genero = st.text_input("¿Qué género quieres?", placeholder="Ej: Corrido, Rap, Regional...")
+tema = st.text_area("¿De qué trata la canción?", placeholder="Escribe la historia aquí...")
 
-if st.button("Componer Canción Completa ✨"):
+if st.button("Componer Canción ✨"):
     if genero and tema:
-        with st.spinner("La IA está escribiendo rimas originales..."):
+        with st.spinner("La IA está rimando..."):
             try:
-                # Instrucción para la IA
-                instruccion = f"Escribe una canción de {genero} muy completa y extensa. El tema es: {tema}. Incluye intro, versos detallados, coro pegajoso y un final. Que rime perfectamente."
+                # Instrucción optimizada
+                prompt = f"Escribe una canción de {genero}. Tema: {tema}. Hazla larga, con rimas excelentes, intro, 4 versos, coro y final."
                 
-                response = model.generate_content(instruccion)
+                response = model.generate_content(prompt)
                 
-                st.success("¡Composición terminada!")
-                st.markdown(f"### Letra de {genero}")
-                st.write(response.text)
-                
+                # Verificamos si la respuesta tiene texto
+                if response.text:
+                    st.success("¡Canción lista!")
+                    st.markdown(f"### {genero}")
+                    st.write(response.text)
+                else:
+                    st.error("La IA no pudo generar texto, intenta con otro tema.")
+                    
             except Exception as e:
-                st.error("Error al conectar con la IA. Intenta de nuevo.")
+                # Esto nos dirá el error real si falla
+                st.error(f"Error técnico: {str(e)}")
     else:
-        st.warning("Por favor rellena ambos cuadros.")
+        st.warning("Llena los campos por favor.")
 
-st.markdown('<div style="text-align:center; background-color:#f0f0f0; padding:10px; border-radius:5px; border:1px solid #ddd; margin-top:30px;">ANUNCIO RELACIONADO</div>', unsafe_allow_html=True)
+st.markdown("---")
+st.caption("Publicidad Inferior")
