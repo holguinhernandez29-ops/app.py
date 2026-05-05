@@ -1,42 +1,28 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="Songwriter AI Pro", layout="centered")
+st.set_page_config(page_title="Compositor Pro")
 
-# --- CONEXIÓN DIRECTA ---
-# Pon tu llave real aquí para asegurar el tiro
-LLAVE_API = "AIzaSyDSfUxU8Bn64hYhdhDYnqO_NnF9W9-8O3o" 
-
-try:
-    genai.configure(api_key=LLAVE_API)
-    # USAMOS ESTE NOMBRE QUE ES EL ESTÁNDAR GLOBAL
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
-except Exception as e:
-    st.error("Error de inicio.")
+# CONEXIÓN
+if "GOOGLE_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+else:
+    st.error("Falta la llave en Secrets.")
 
 st.title("🎼 Songwriter AI Pro")
 
 genero = st.text_input("Género Musical", value="Cumbia")
-tema = st.text_area("Historia de la canción", placeholder="Alberto y Marissa amor de lejos...")
+tema = st.text_area("Historia", value="Alberto y Marissa amor lejano")
 
-if st.button("Componer Obra Maestra ✨"):
-    if tema:
-        with st.spinner("🚀 Escribiendo..."):
-            try:
-                # Prompt directo y sencillo
-                response = model.generate_content(f"Escribe una canción de {genero} sobre: {tema}")
-                st.markdown("### 🎼 Letra:")
-                st.write(response.text)
-                st.balloons()
-            except Exception as e:
-                # Si falla el flash, intentamos el pro automáticamente
-                try:
-                    model_pro = genai.GenerativeModel('gemini-1.5-pro-latest')
-                    response = model_pro.generate_content(f"Escribe una canción de {genero} sobre: {tema}")
-                    st.write(response.text)
-                    st.balloons()
-                except:
-                    st.error("Google no encontró el modelo. Intenta de nuevo en un momento.")
-    else:
-        st.warning("Escribe la historia.")
-        
+if st.button("Componer ✨"):
+    with st.spinner("Escribiendo..."):
+        try:
+            # ESTA ES LA CLAVE: Usamos el modelo v1 que es el más estable
+            model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+            response = model.generate_content(f"Escribe un {genero} sobre {tema}")
+            st.success("¡Listo!")
+            st.write(response.text)
+            st.balloons()
+        except Exception as e:
+            st.error(f"Error de conexión. Intenta una vez más. ({e})")
+            
