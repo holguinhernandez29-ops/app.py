@@ -1,55 +1,45 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configuración de página
 st.set_page_config(page_title="IA Musical Pro", layout="centered")
 
-# --- TU LLAVE MAESTRA ---
+# --- CONEXIÓN CON LLAVE ---
 API_KEY = "AIzaSyAQd7vtgDHInLCj2lkoOVSVtjQEfiOxa-k"
-
-try:
-    genai.configure(api_key=API_KEY)
-    # Usamos solo el nombre del modelo, sin el prefijo "models/"
-    # Esto soluciona el error 404 en la mayoría de los casos
-    model = genai.GenerativeModel("gemini-1.5-flash")
-except Exception as e:
-    st.error("Error al conectar con el cerebro de la IA.")
+genai.configure(api_key=API_KEY)
 
 st.title("🎼 Generador de Canciones Originales")
 
 # Publicidad
 st.markdown('<div style="text-align:center; background-color:#1e2130; padding:10px; border-radius:10px; color:white;">Espacio para Publicidad de Google AdSense</div>', unsafe_allow_html=True)
 
-genero = st.text_input("¿Qué género quieres?", placeholder="Ej: Corrido, Rap, Trap...")
-tema = st.text_area("¿De qué trata la canción?", placeholder="Escribe la historia o para quién es...")
+genero = st.text_input("¿Qué género quieres?", placeholder="Ej: Corrido, Rap...")
+tema = st.text_area("¿De qué trata la canción?", placeholder="Escribe la historia aquí...")
 
 if st.button("Componer Canción ✨"):
     if genero and tema:
-        with st.spinner("Escribiendo rimas únicas..."):
-            try:
-                # Instrucción directa
-                prompt = f"Escribe una canción completa de {genero} sobre {tema}. Estructura: Intro, Versos, Coro y Final. Que rime bien y sea larga."
-                
-                response = model.generate_content(prompt)
-                
-                if response.text:
-                    st.success("¡Canción generada!")
-                    st.markdown(f"### Letra de {genero}")
-                    st.write(response.text)
-                else:
-                    st.error("La IA no pudo generar el texto.")
-                    
-            except Exception as e:
-                # Si esto vuelve a fallar, intentamos con el nombre viejo pero sin prefijo
+        with st.spinner("Buscando rimas..."):
+            # LISTA DE MODELOS A PROBAR (Uno tiene que funcionar)
+            modelos_a_probar = ["gemini-1.5-flash", "gemini-pro", "models/gemini-1.5-flash", "models/gemini-pro"]
+            exito = False
+            
+            for nombre_modelo in modelos_a_probar:
                 try:
-                    model_alt = genai.GenerativeModel("gemini-pro")
-                    response = model_alt.generate_content(prompt)
-                    st.success("¡Canción generada (Modo Respaldo)!")
-                    st.write(response.text)
+                    model = genai.GenerativeModel(nombre_modelo)
+                    prompt = f"Escribe una canción completa de {genero} sobre {tema}. Estructura: Intro, Versos, Coro y Final. Que rime bien."
+                    response = model.generate_content(prompt)
+                    
+                    if response.text:
+                        st.success(f"¡Listo! (Usando {nombre_modelo})")
+                        st.markdown(response.text)
+                        exito = True
+                        break # Si funciona, salimos del ciclo
                 except:
-                    st.error(f"Aviso del sistema: {str(e)}")
+                    continue # Si falla, brinca al siguiente nombre
+            
+            if not exito:
+                st.error("El servidor de Google está saturado o no reconoce los nombres. Intenta de nuevo en un minuto.")
     else:
-        st.warning("Escribe el género y el tema.")
+        st.warning("Llena los campos.")
 
 st.markdown("---")
 st.caption("Publicidad Inferior")
