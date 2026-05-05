@@ -6,32 +6,44 @@ st.set_page_config(page_title="IA Musical Pro", layout="centered", page_icon="�
 
 # --- CONEXIÓN SEGURA CON LA LLAVE ---
 try:
-    # Esto toma la llave de la "Caja Fuerte" de Streamlit
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
 except:
-    st.error("Error: No se encontró la llave en los Secrets de Streamlit.")
+    st.error("Error: Configura la llave en los Secrets de Streamlit.")
 
-# --- FUNCIÓN PARA MOSTRAR PUBLICIDAD ---
+# --- FUNCIÓN PARA PUBLICIDAD ---
 def mostrar_anuncio(posicion):
-    # Aquí es donde pegarás el código que te dé AdSense después
-    # Por ahora, dejamos el espacio listo y estético
     st.markdown(f"""
     <div style="text-align:center; margin: 20px 0; padding: 15px; background: #f0f2f6; border-radius: 10px; border: 1px dashed #ccc;">
         <p style="color: #666; font-size: 12px; margin: 0;">PUBLICIDAD - {posicion}</p>
-        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-# --- DISEÑO DE LA APP ---
+# --- DISEÑO ---
 st.title("🎼 Generador de Canciones IA")
-st.subheader("Crea letras originales en segundos")
-
 mostrar_anuncio("BANNER SUPERIOR")
 
-# Entradas del usuario
 col1, col2 = st.columns(2)
 with col1:
-    genero = st.selectbox("Elige el género:", ["Corrido", "Rap", "Bachata", "Reggaeton", "Regional Mexicano", "Pop"])
+    genero = st.selectbox("Género:", ["Bachata", "Corrido", "Rap", "Regional Mexicano"])
 with col2:
-    ritmo = st.text_input("Ritmo (opcional):", placeholder="Ej: 3/4,
-                          
+    ritmo = st.text_input("Ritmo (opcional):", placeholder="Ej: 4/4")
+
+tema = st.text_area("Historia:", placeholder="Ej: Amor a distancia Marissa y Alberto")
+
+if st.button("Componer ✨", use_container_width=True):
+    if tema:
+        with st.spinner("Escribiendo..."):
+            try:
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                prompt = f"Escribe una canción de {genero} sobre: {tema}"
+                response = model.generate_content(prompt)
+                st.success("¡Listo!")
+                st.write(response.text)
+            except:
+                st.error("Intenta de nuevo en un momento.")
+    else:
+        st.warning("Escribe una historia.")
+
+mostrar_anuncio("BANNER INFERIOR")
+
